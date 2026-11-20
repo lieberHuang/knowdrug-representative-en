@@ -1,89 +1,27 @@
-# knowdrug 知药-代表版
+# KnowDrug Representative Edition (English)
 
-这是与医生端独立的 HTML / CSS / JavaScript 交互演示项目。医生端项目位于同级 `medlink`，本项目不修改医生端文件。
+An English copy of the KnowDrug representative app. It retains the original avatar setup, video generation demo, doctor insights, knowledge base, video invitation flow, and the same video files and sources. The Chinese project remains separate.
 
-启动：在本目录执行 `python3 -m http.server 8081 --directory dist`，打开 `http://localhost:8081`。
+## Run locally
 
-功能：
+```bash
+python3 -m http.server 8080 --directory dist
+```
 
-- 首页：数字人概览、近7/30天服务指标、高频提问主题。
-- 数字人：未建立形象时引导创建；照片和声纹分步录入，各展示约 2 秒的模拟质量校验。点击创建数字人展示 10 秒 loading 后进入建模完成页。已有形象后，一级数字人页面直接展示视频播放器、左右切换、标题、创建时间、医生邀请及观看统计、医生状态、下载和创建新视频入口。视频列表不再作为独立二级页面。分析内容可按视频及医生保存、复制；邀请医生通过当前页面的底部弹窗选择对象、生成并复制链接。形象编辑入口只放在右上角“我的”内。三个固定话术模板保留发布人、发布时间和生成状态，选择后随机展示 10–15 秒 loading，再回到数字人一级页面呈现对应视频。
+Open `http://127.0.0.1:8080/` on a computer or phone on the same network.
 
-- 医生洞察：默认医生列表与搜索，不再提供最近 7 天时间线和标签筛选；医生详情仅汇总对应医生的创支申请人数、已开通和处理中数量，不展示患者列表与详情；保留提问总结，移除功能使用和跟进记录卡片，另按邀请链接记录浏览、视频播放、看完和提问的真实本浏览器操作轨迹。
-- 知识库：三个专家通过服务端 DeepSeek API 实时回答。回答和三个不同的“猜你想问”由同次模型结果返回，追问根据本次问题及回答延展，可点击继续提问。药品专家先独立判断问题范围，再生成仅与日达仙相关的答复；越界问题拒答并提供日达仙相关追问。失败或超时展示重试入口，不回退成本地模板答案。每个专家的对话、草稿和待处理请求相互独立。
+## Implementation
 
-- 我的：顶部头像进入“我的”，可编辑数字人形象并注销。注销确认后，清除代表端 IndexedDB 全部记录和 `knowdrug-representative-` localStorage 记录，停止录音/生成、释放媒体 URL，回到照片上传步骤。医生端的存储不受影响。已打开的同源页面通过 BroadcastChannel 接收注销状态，原分享链接失效。
-- 统计：周期切换、趋势指标切换、柱状图点击、功能下钻、医生使用排行及 CSV 导出。
+- `dist/` is the deployable site. GitHub Pages serves this directory from the `gh-pages` branch.
+- `dist/i18n-en.js` translates interface text without changing the underlying workflow or video media.
+- Q&A requests include `locale: "en"`. The optional English branch in `server/worker.mjs` returns English streaming answers and follow-up questions; requests without the locale continue to use Chinese.
+- Browser data uses the `knowdrug-representative-en-` prefix and `knowdrug-representative-en-workspace` IndexedDB name, separate from the Chinese project.
 
-数据边界：
+## Check
 
-- `dist/data.js` 为确定性合成样例，提问量、功能次数与图表由同一事件集合计算。`PAYMENT_APPLICATIONS` 为按 doctorId 关联的匿名创支申请记录，审核和服务状态均为本机交互资料，不连接真实支付/审核系统；统计由对应医生的申请记录计算。
-- 代表端未读取医生端的实际使用记录；两端尚无后台数据同步。
-- 个人上传的照片、声纹录音、知识库正文、医生标签、分享链接与轨迹保存在当前 origin 的 IndexedDB，不上传到网络或 GitHub。用户指定的三段模板视频作为公开静态资源随网站发布；模板选择记录仅保存视频标识，旧版已生成的视频 Blob 仍兼容播放与分享。旧版跟进笔记继续保存在 localStorage。清除网站数据会删除这些本地资料。
-- 照片/声音录入校验按用户要求为交互演示，只检查可读取的格式，不做人脸识别、真人身份或声纹鉴定。模板生成流程为交互等待并呈现用户提供的视频，未接数字人视频生成、声音克隆或口型合成服务。声纹采集需安全上下文与麦克风授权，也可上传音频；音频读取依赖浏览器 MediaRecorder / AudioContext。
-- 分享链接的内容保存在原浏览器：需在同 origin、同一浏览器配置文件下预览，不能跨设备分享。页面明确说明此限制，预览按钮不会计入轨迹；普通链接按所选医生归属记录操作，不验证实际浏览者身份。视频素材可另行分享。
-- 新增轨迹独立于原有合成统计，不把未发生的浏览或提问记成实际操作。知识库没有预置药品事实或 API 密钥。
-- 旧版笔记与跟进状态保留 `knowdrug-representative-` localStorage 命名空间。Sites 和 GitHub Pages 的 origin 不同，浏览器资料不会互通。
-- 示例数据不包含患者病例正文。
+```bash
+npm ci
+npm test
+```
 
-原型使用与医生端一致的系统中文字体、480px移动布局、底部导航和底部弹层。视觉参考浅蓝淡紫渐变、白色圆角卡片、浅灰输入框与亮蓝按钮，沿用现有虚拟代表肖像。`dist/representative-theme.css` 统一颜色、字重、圆角及阴影，并补充建模 loading 和完成状态样式，保留原有页面的字号层级及尺寸间距。页面背景采用纵向渐变，末端与长页面底色一致。
-
-当前演示药品统一为日达仙。相关条目为资料阅读框架与交互样例，不增加具体适应症或用药剂量信息。
-
-
-## 本机交互检查
-
-执行 `npm ci && npm test`。开发依赖仅用于 DOM / IndexedDB 流程检查，线上页面不依赖 npm 包。检查覆盖照片/声纹分步录入和 loading 弹窗、聊天检索与引用、数字人三种状态、医生列表与搜索、按医生归属的创支汇总、三专家切换与并发回答、每条回答的三个追问、分享轨迹、注销后清空历史与失效链接、待回答任务取消，以及保留医生端存储。实际麦克风授权与移动设备显示仍需实机体验。
-
-首页：[https://lieberhuang.github.io/knowdrug-representative/](https://lieberhuang.github.io/knowdrug-representative/)
-
-## 手机兼容增强
-
-- 使用测量的视口高度替代对动态视口单位的单一依赖，处理地址栏和软键盘变化；补充短屏、横屏及 320–360 px 窄屏样式。
-- 对缺少原生 dialog 的浏览器提供本机弹窗回退，包含遮罩、焦点约束、关闭与嵌套弹层；对缺少 randomUUID 的浏览器使用 getRandomValues 生成标识，移除 Object.hasOwn / Array.at 依赖。
-- 自动化检查模拟 320×568、360×640、375×667、390×844、430×932、480×800、667×375、844×390 视口以及键盘偏移，分别执行原生弹窗和回退弹窗的业务流程。该检查不进行真实浏览器像素布局。
-- 已使用本机 Chrome 手机视口检查 320、390、430 px 竖屏与 844 px 横屏，各页面无横向溢出；截图核对首页、医生详情长页、知识库、照片/声纹质量 loading、建模 loading 及完成页。创建数字人实测在约 10 秒后进入完成页。尚未进行 iPhone / 安卓 / 微信内置浏览器的实机验收；语音识别和录音仍受浏览器能力及授权限制。
-
-手机展示使用约 219 KB 的 `assets/representative.jpg`，替代直接加载约 1.8 MB 的 PNG；原始 PNG 仅作为创作素材保留。
-
-## 固定视频模板
-
-`dist/video-templates.js` 绑定三个固定模板和对应 MP4 / 封面，选择后每次随机等待 10、11、12、13、14 或 15 秒。等待期间防止重复选择，返回其他页面会取消结果写入。视频为用户提供的原始 H.264 / AAC 内容，仅无损调整 MP4 为 faststart；不替换画面和音轨。分享链接保留选择时的视频标识，后续选择其他模板不会覆盖先前链接的视频。自动化检查覆盖 10 / 12 / 15 秒定时器边界、三个模板映射、下载/分享、旧版 Blob 兼容和取消流程。
-
-本机 Chrome 已实测三个模板的随机 loading、完整视频播放与分享页，在 320 / 390 / 430 px 竖屏和 844 px 横屏下检查模板列表无横向溢出。
-
-## 视频历史与触达
-
-- 新视频、当前视频和选中模板在同一 IndexedDB 事务中保存；重载会保留历史，后续生成不会覆盖先前条目。旧版只保存最后一次生成结果，该结果会自动迁移；更早且未保存的生成记录无法恢复。
-- 邀请链接携带 `videoId`，按具体视频统计。按用户本轮要求，展示统计包括每个视频固定保存的随机演示基线及本浏览器互动；按医生合并去重，播放次数累计。代表在数字人页预览不会计入医生轨迹。旧链接在能确定历史条目的情况下按视频快照和时间匹配。
-- 当前话术卡片的发布人“知药学术团队”和发布时间 2026-11-14 为展示配置，保存在 `dist/video-templates.js`；生成状态根据本浏览器已保存的视频判断。
-- 分析内容由代表填写，按视频和医生分别保存在当前浏览器。复制按钮保存内容并复制供代表转发，不自动发送消息。注销时一并清除视频历史和分析。
-
-## 数字人一级页面与邀请弹窗
-
-- 视频播放、左右切换、创建、创建时间、观看统计、医生状态、分析及邀请均可从数字人一级页面操作；底部操作条位于主导航上方，保留手机安全区。返回旧版视频列表或邀请链接历史入口时，会转到数字人一级页，邀请通过弹窗处理。
-- 邀请弹窗绑定当前视频，生成后保持弹窗和底层页面，更新邀请结果及统计，不重新加载播放器。
-- 按用户确认，12 位医生统一使用完整中文展示姓名，不对应真实人员；医生编号、医院、科室、提问和创支数据关联保持不变。旧版标签中的“张医生”等称呼不会覆盖新姓名，手动填写的其他姓名继续保留。
-
-### 最新导航与姓名展示
-
-已生成数字人的账号进入数字人一级页即显示完整视频工作区，包括播放、左右切换、创建新视频、统计、医生状态、分析与邀请弹窗。形象编辑仅在右上角“我的”中提供。打开弹窗会暂停当前视频并保留播放位置。邀请生成后仍停留在弹窗内，底层播放器不重建。主导航保持显示，邀请/分析操作条位于其上方。
-
-医生全名为经用户确认的非真实人员展示值，统一更新列表、详情、邀请对象、观看状态与分析医生选择。相同医生编号保持不变；旧保存标签中的占位称呼自动使用新展示名。
-
-## 非零演示统计与职称
-
-- “创建新视频”放入数字人页独立白色卡片。移除自定义下载入口，并为视频原生控件设置 `controlslist="nodownload"`。
-- 每个视频生成时保存一组 `engagementDemo`：随机选择 8–12 位医生，并生成完整观看、已播放、仅查看、未查看四类状态。邀请、查看、播放和看完四项总数均为非零整数，人数与播放次数从同一组医生状态计算，避免指标互相矛盾。切换和刷新不重新随机，已有历史视频会自动补全。
-- 演示基线仅保存在视频记录中，不伪造邀请链接或医生行为事件；界面按医生合并基线和实际本浏览器互动，实际轨迹仍独立保存。注销会一并清除。
-- 医生洞察列表和详情的姓名后增加职称标签，包括主任医师、副主任医师、主治医师；均为经确认的非真实人员展示资料。
-
-## DeepSeek 服务与医院展示
-
-- 密钥只保存在 Sites 运行时秘密变量 `DEEPSEEK_API_KEY` 中，模型为 `deepseek-flash`，浏览器只请求 `/api/knowledge`；GitHub Pages 调用既有 Sites 的服务端代理。`server/worker.mjs` 是部署源代码，不含密钥。接口限制请求体、专家范围、输出格式、超时、来源和请求频次；演示限流为 Worker 内存级，正式服务需持久化网关限流及身份校验。
-- 每次只发送当前问题及当前专家在本次接入后产生的最多六条最近消息，不发送照片、声音、病例、医生资料、知识库文件正文或旧版本地资料回答。新问答仍保存在本浏览器；其请求内容会发送至 DeepSeek。
-- “链接行为轨迹”单独保存每位医生的随机演示访问序列，包含浏览、播放、看完及提问，刷新不重新随机；实际轨迹仍单独记录，展示时合并排序，注销会清空。
-- 医院使用现实上海三甲医院名称，医生仍为已确认的非真实人员展示姓名，不表示这些人员在相应机构任职。医院资料依据：[中山医院（国家卫健委）](https://www.nhc.gov.cn/wjw/c100175/202110/b3e60ff5923b49efa070bef323687361.shtml)、[瑞金医院概况](https://rjvpn2.rjh.com.cn/2018RJPortal/main/yyjs/rjgk/index.shtml)、[华山医院介绍](https://www.huashan.org.cn/yygk/hsyyjs.htm)。
-- API 参考：[DeepSeek 调用文档](https://api-docs.deepseek.com/)、[JSON 输出](https://api-docs.deepseek.com/guides/json_mode/)。
-
-服务端的非 API 路由重定向到 GitHub Pages，以保留当前前端访问入口。当前测试机的网络代理会重置 chatgpt.site 主机名连接；真实联调通过指定可达边缘地址完成，默认代理配置仍需用户调整或更换后端域名。
+The DeepSeek API key stays on the server and is never included in the web bundle.

@@ -1,7 +1,7 @@
 /* Browser-only records. Uploaded materials never enter the source repository. */
 const RepLocal=(()=>{
  let connection;
- const open=()=>connection||(connection=new Promise((resolve,reject)=>{const r=indexedDB.open('knowdrug-representative-workspace',1);r.onupgradeneeded=()=>r.result.createObjectStore('records',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>{connection=null;reject(new Error('无法打开浏览器资料库，请允许网站存储后重试'));};}));
+ const open=()=>connection||(connection=new Promise((resolve,reject)=>{const r=indexedDB.open('knowdrug-representative-en-workspace',1);r.onupgradeneeded=()=>r.result.createObjectStore('records',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>{connection=null;reject(new Error('无法打开浏览器资料库，请允许网站存储后重试'));};}));
  async function run(mode,action){const db=await open();return new Promise((resolve,reject)=>{const tx=db.transaction('records',mode);let result;try{const request=action(tx.objectStore('records'));request.onsuccess=()=>result=request.result;}catch(e){tx.abort();reject(e);return;}tx.oncomplete=()=>resolve(result);tx.onerror=tx.onabort=()=>reject(new Error('资料未保存，请检查浏览器存储空间'));});}
  const get=id=>run('readonly',s=>s.get(id));
  const put=record=>run('readwrite',s=>s.put(record));

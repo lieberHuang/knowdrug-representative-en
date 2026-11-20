@@ -35,7 +35,7 @@ const RepKnowledgeAPI=(()=>{
   signal?.addEventListener('abort',onAbort,{once:true});if(signal?.aborted)controller.abort();
   const timeout=setTimeout(()=>controller.abort(),115000);
   try{
-   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert,question,history:historyFor(messages)}),signal:controller.signal});
+   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({expert,question,history:historyFor(messages),locale:'en'}),signal:controller.signal});
    if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||'暂时无法获取回答，请稍后重试');}
    if(!response.headers?.get('Content-Type')?.includes('text/event-stream')){const data=valid(await response.json());onDelta?.(data.answer.body);return data;}
    return await readEvents(response,onDelta);
