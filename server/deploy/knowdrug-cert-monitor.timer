@@ -1,0 +1,11 @@
+[Unit]
+Description=Monitor knowdrug HTTPS certificate every six hours
+
+[Timer]
+OnCalendar=*-*-* 03,09,15,21:00:00
+RandomizedDelaySec=15m
+Persistent=true
+Unit=knowdrug-cert-monitor.service
+
+[Install]
+WantedBy=timers.target

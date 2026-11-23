@@ -1,0 +1,9 @@
+[Unit]
+Description=Check and renew knowdrug HTTPS certificate
+After=network-online.target nginx.service knowdrug-api.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/knowdrug-api/node/bin/node /opt/knowdrug-api/server/cert-monitor.mjs
+TimeoutStartSec=180
